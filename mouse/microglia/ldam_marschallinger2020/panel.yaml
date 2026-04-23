@@ -1,0 +1,20 @@
+id: "ldam_marschallinger2020"
+name: "ldam_marschallinger2020"
+organism: "mouse"
+tissue: "microglia"
+type: "deg"
+case_condition: "BODIPY-high (lipid-accumulating)"
+control_condition: "BODIPY-low"
+source:
+  citation: "Marschallinger et al. 2020 Nat Neurosci 23(2):194-208"
+  doi: "10.1038/s41593-019-0566-1"
+  geo_accession: null
+description: "Lipid Droplet-Accumulating Microglia (LDAM) signature from BODIPY-sorted aged mouse microglia (Suppl Table 2, sheet T2-1)."
+score_method: "log2fc"
+n_up: 377
+n_down: 319
+files:
+  up: up.tsv
+  down: down.tsv
+contributor: "tmurano"
+created: "2026-04-23"

@@ -1,0 +1,20 @@
+id: "lpc_hammond2019"
+name: "lpc_hammond2019"
+organism: "mouse"
+tissue: "microglia"
+type: "deg"
+case_condition: "P100_LPC (demyelination)"
+control_condition: "P100_saline"
+source:
+  citation: "Hammond et al. 2019 Immunity 50(1):253-271.e6"
+  doi: "10.1016/j.immuni.2018.11.004"
+  geo_accession: "GSE121654"
+description: "LPC-induced demyelination response signature (P100 LPC vs saline) from mouse microglia."
+score_method: "log2fc"
+n_up: 1000
+n_down: 1000
+files:
+  up: up.tsv
+  down: down.tsv
+contributor: "tmurano"
+created: "2026-04-23"

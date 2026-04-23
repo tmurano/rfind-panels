@@ -1,0 +1,20 @@
+id: "dam_kerenshaul2017"
+name: "dam_kerenshaul2017"
+organism: "mouse"
+tissue: "microglia"
+type: "deg"
+case_condition: "5xFAD (AD model)"
+control_condition: "WT"
+source:
+  citation: "Keren-Shaul et al. 2017 Cell 169(7):1276-1290.e17"
+  doi: "10.1016/j.cell.2017.05.018"
+  geo_accession: "GSE98969"
+description: "Disease-Associated Microglia (DAM) signature from 5xFAD AD model (Supplementary Table mmc3)."
+score_method: "log2fc"
+n_up: 1000
+n_down: 1000
+files:
+  up: up.tsv
+  down: down.tsv
+contributor: "tmurano"
+created: "2026-04-23"

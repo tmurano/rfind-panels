@@ -1,0 +1,20 @@
+id: "ad_marschallinger2020"
+name: "ad_marschallinger2020"
+organism: "mouse"
+tissue: "microglia"
+type: "deg"
+case_condition: "AD (5xFAD/APP)"
+control_condition: "WT"
+source:
+  citation: "Marschallinger et al. 2020 Nat Neurosci 23(2):194-208 (curated from Wang 2015)"
+  doi: "10.1038/s41593-019-0566-1"
+  geo_accession: null
+description: "Curated AD signature from Marschallinger 2020 Suppl Table 12, originally from Wang et al. 2015 (binary UP/DOWN)."
+score_method: "binary"
+n_up: 75
+n_down: 54
+files:
+  up: up.tsv
+  down: down.tsv
+contributor: "tmurano"
+created: "2026-04-23"

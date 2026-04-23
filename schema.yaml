@@ -1,0 +1,105 @@
+# rfind-panels panel.yaml schema v0.1
+# -----------------------------------------------------------------------------
+# Every panel lives at <organism>/<tissue>/<panel_id>/ and consists of:
+#   - panel.yaml : metadata (this schema)
+#   - up.tsv     : UP-direction gene list (required, TSV with columns gene/diff/rank)
+#   - down.tsv   : DOWN-direction gene list (required for type=deg, absent for type=gene_set)
+#
+# TSV format:
+#   - Header required: gene<TAB>diff<TAB>rank
+#   - gene: gene symbol in organism-native case (e.g. mouse = mixed case "Aging_Marsch", human = ALL CAPS)
+#   - diff: numeric. log2FC for type=deg/score_method=log2fc, ±1 for binary, peak width for signal_width
+#   - rank: integer starting at 1 (UP descending by diff, DOWN descending by |diff|)
+
+schema_version: "0.1"
+
+fields:
+  id:
+    type: string
+    required: true
+    pattern: "^[a-z0-9_]+$"
+    description: "Unique stable ID (lowercase, snake_case). Example: 'aging_hammond2019'."
+
+  name:
+    type: string
+    required: true
+    description: "Display name (usually same as id or human-readable)."
+
+  organism:
+    type: string
+    required: true
+    enum: [mouse, human, rat, zebrafish, other]
+
+  tissue:
+    type: string
+    required: true
+    description: "Free-form tissue/cell-type tag. Use existing paths if possible (microglia, macrophage, t_cell, neuron, ...)."
+
+  type:
+    type: string
+    required: true
+    enum: [deg, gene_set]
+    description: |
+      - deg: DEG-type panel with UP + DOWN (case vs control), bidirectional scoring
+      - gene_set: single-condition gene set, UP-only (DOWN absent)
+
+  case_condition:
+    type: string
+    required: true
+    description: "Case / target condition (e.g. 'P540 (aged)', 'H3K27ac enrichment')."
+
+  control_condition:
+    type: string | null
+    required: true
+    description: "Control condition. null for type=gene_set."
+
+  source:
+    type: object
+    required: true
+    fields:
+      citation:    {type: string, required: true}
+      doi:         {type: string | null, required: true}
+      geo_accession: {type: string | null, required: true}
+      supplement:  {type: string | null, required: false, description: "e.g. 'Suppl Table 2, sheet T2-1'"}
+
+  description:
+    type: string
+    required: true
+    description: "One-to-two sentence summary."
+
+  score_method:
+    type: string
+    required: true
+    enum: [log2fc, binary, signal_width, other]
+    description: |
+      How 'diff' column should be interpreted:
+      - log2fc: DEG log2 fold-change (case_up_positive)
+      - binary: curated UP/DOWN list (+1 / -1)
+      - signal_width: ChIP/CUT&Tag peak width as signal proxy
+      - other: specify in description
+
+  n_up:
+    type: integer
+    required: true
+    description: "Number of UP genes."
+
+  n_down:
+    type: integer
+    required: true
+    description: "Number of DOWN genes. 0 for type=gene_set."
+
+  files:
+    type: object
+    required: true
+    fields:
+      up:   {type: string, required: true, description: "Relative path to UP TSV, usually 'up.tsv'"}
+      down: {type: string | null, required: true, description: "Relative path to DOWN TSV, or null for type=gene_set"}
+
+  contributor:
+    type: string
+    required: true
+    description: "GitHub username of the contributor."
+
+  created:
+    type: string (YYYY-MM-DD)
+    required: true

@@ -1,0 +1,20 @@
+id: "h3k27ac_gosselin2017"
+name: "h3k27ac_gosselin2017"
+organism: "mouse"
+tissue: "microglia"
+type: "gene_set"
+case_condition: "H3K27ac enrichment"
+control_condition: null
+source:
+  citation: "Gosselin et al. 2017 Science 356(6344):eaal3222"
+  doi: "10.1126/science.aal3222"
+  geo_accession: "GSE89960"
+description: "Active enhancer mark (H3K27ac) ChIP-seq peak-annotated gene list from ex vivo mouse microglia; signal = peak width."
+score_method: "signal_width"
+n_up: 1000
+n_down: 0
+files:
+  up: up.tsv
+  down: null
+contributor: "tmurano"
+created: "2026-04-23"

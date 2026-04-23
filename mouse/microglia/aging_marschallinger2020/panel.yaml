@@ -1,0 +1,20 @@
+id: "aging_marschallinger2020"
+name: "aging_marschallinger2020"
+organism: "mouse"
+tissue: "microglia"
+type: "deg"
+case_condition: "aged"
+control_condition: "young"
+source:
+  citation: "Marschallinger et al. 2020 Nat Neurosci 23(2):194-208 (curated from Holtman 2015)"
+  doi: "10.1038/s41593-019-0566-1"
+  geo_accession: null
+description: "Curated aging signature from Marschallinger 2020 Suppl Table 12, originally from Holtman et al. 2015 (binary UP/DOWN)."
+score_method: "binary"
+n_up: 50
+n_down: 49
+files:
+  up: up.tsv
+  down: down.tsv
+contributor: "tmurano"
+created: "2026-04-23"

@@ -1,0 +1,20 @@
+id: "aging_hammond2019"
+name: "aging_hammond2019"
+organism: "mouse"
+tissue: "microglia"
+type: "deg"
+case_condition: "P540 (aged)"
+control_condition: "P100_brain (adult)"
+source:
+  citation: "Hammond et al. 2019 Immunity 50(1):253-271.e6"
+  doi: "10.1016/j.immuni.2018.11.004"
+  geo_accession: "GSE121654"
+description: "Aging signature (aged P540 vs adult P100) from mouse microglia scRNA-seq."
+score_method: "log2fc"
+n_up: 1000
+n_down: 1000
+files:
+  up: up.tsv
+  down: down.tsv
+contributor: "tmurano"
+created: "2026-04-23"

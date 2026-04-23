@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-04-23T18:28:59+0900",
+  "n_panels": 10,
+  "panels": [
+    {"id":"aging_hammond2019","organism":"mouse","tissue":"microglia","type":"deg","n_up":1000,"n_down":1000,"citation":"Hammond et al. 2019 Immunity 50(1):253-271.e6","path":"mouse/microglia/aging_hammond2019"},
+    {"id":"lpc_hammond2019","organism":"mouse","tissue":"microglia","type":"deg","n_up":1000,"n_down":1000,"citation":"Hammond et al. 2019 Immunity 50(1):253-271.e6","path":"mouse/microglia/lpc_hammond2019"},
+    {"id":"development_hammond2019","organism":"mouse","tissue":"microglia","type":"deg","n_up":1000,"n_down":1000,"citation":"Hammond et al. 2019 Immunity 50(1):253-271.e6","path":"mouse/microglia/development_hammond2019"},
+    {"id":"dam_kerenshaul2017","organism":"mouse","tissue":"microglia","type":"deg","n_up":1000,"n_down":1000,"citation":"Keren-Shaul et al. 2017 Cell 169(7):1276-1290.e17","path":"mouse/microglia/dam_kerenshaul2017"},
+    {"id":"ldam_marschallinger2020","organism":"mouse","tissue":"microglia","type":"deg","n_up":377,"n_down":319,"citation":"Marschallinger et al. 2020 Nat Neurosci 23(2):194-208","path":"mouse/microglia/ldam_marschallinger2020"},
+    {"id":"aging_marschallinger2020","organism":"mouse","tissue":"microglia","type":"deg","n_up":50,"n_down":49,"citation":"Marschallinger et al. 2020 Nat Neurosci 23(2):194-208 (curated from Holtman 2015)","path":"mouse/microglia/aging_marschallinger2020"},
+    {"id":"ad_marschallinger2020","organism":"mouse","tissue":"microglia","type":"deg","n_up":75,"n_down":54,"citation":"Marschallinger et al. 2020 Nat Neurosci 23(2):194-208 (curated from Wang 2015)","path":"mouse/microglia/ad_marschallinger2020"},
+    {"id":"h3k27ac_gosselin2017","organism":"mouse","tissue":"microglia","type":"gene_set","n_up":1000,"n_down":0,"citation":"Gosselin et al. 2017 Science 356(6344):eaal3222","path":"mouse/microglia/h3k27ac_gosselin2017"},
+    {"id":"h3k4me2_gosselin2017","organism":"mouse","tissue":"microglia","type":"gene_set","n_up":1000,"n_down":0,"citation":"Gosselin et al. 2017 Science 356(6344):eaal3222","path":"mouse/microglia/h3k4me2_gosselin2017"},
+    {"id":"h3k4me1_wendeln2018","organism":"mouse","tissue":"microglia","type":"gene_set","n_up":779,"n_down":0,"citation":"Wendeln et al. 2018 Nature 556(7701):332-338","path":"mouse/microglia/h3k4me1_wendeln2018"}
+  ]
+}
