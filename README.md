@@ -1,27 +1,55 @@
 # rfind-panels
 
-Community panel registry for **RFind-sc** (Running Fisher for individuals, single-cell version).
+Community panel registry for **RFind-sc** (Running Fisher for single-cell).
 
-Each "panel" is a curated gene list (UP and optionally DOWN) that defines an axis for scRNA-seq gene-set scoring. This registry holds panels in a standardized, machine-readable format so they can be easily shared, reused, and installed into the `RFindsc` R package (coming soon).
+Each "panel" is a curated gene list (UP + optionally DOWN) that defines an
+axis for scRNA-seq gene-set scoring. This registry holds panels in a
+standardized, machine-readable format so they can be shared, scored,
+and plugged into the [`RFindsc`](https://github.com/tmurano/RFindsc) R
+package.
 
-## Quick usage (once RFindsc R package is released)
+## Three ways to use this registry
+
+### 1. Browse and try panels in the browser
+
+[**tmurano.github.io/rfind-panels**](https://tmurano.github.io/rfind-panels/)
+is a static catalog of every panel in the registry. Pick any panel and
+click **Try on Hammond** to score it against 5,998 Hammond 2019 mouse
+microglia cells directly in your browser (bidirectional Running Fisher,
+~5 s, no install). You get a score histogram, a tSNE colored by score,
+and a per-group violin without writing a line of code.
+
+### 2. Submit your own panel (web form, no git)
+
+Click **+ Contribute a panel** at the top of the catalog page. Drop a DEG
+CSV/TSV (Symbol + log2FC), fill in a short metadata form, paste a GitHub
+Personal Access Token, and the page will fork this repo on your account,
+commit the three files, and open a pull request for you. CI validates
+the schema and posts a comment with the result. See
+[CONTRIBUTING.md](./CONTRIBUTING.md) for the step-by-step walkthrough.
+
+### 3. Load panels from R
 
 ```r
-# Install a panel by path
+# RFindsc (https://github.com/tmurano/RFindsc) is the scoring engine
+install.packages("remotes")
+remotes::install_github("tmurano/RFindsc")
+
+# Install a panel by its registry path
 biosets <- RFindsc::install_panel("mouse/microglia/aging_hammond2019")
 
-# Install multiple
+# Install multiple at once
 biosets <- RFindsc::install_panels(c(
   "mouse/microglia/aging_hammond2019",
   "mouse/microglia/lpc_hammond2019",
   "mouse/microglia/dam_kerenshaul2017"
 ))
 
-# Score a Seurat object
-scores <- RFindsc::run_pipeline(seurat, biosets)
+# Score a counts matrix (or a Seurat object)
+scores <- RFindsc::run_pipeline(counts, biosets)
 ```
 
-Until then, panels can be loaded directly:
+Or read a panel directly from the raw GitHub URL without any package:
 
 ```r
 read_panel <- function(path) {
@@ -31,7 +59,6 @@ read_panel <- function(path) {
   down <- tryCatch(read.delim(down_path), error = function(e) NULL)
   list(up = up, down = down)
 }
-
 aging <- read_panel("mouse/microglia/aging_hammond2019")
 ```
 
@@ -69,12 +96,30 @@ Schema spec: [schema.yaml](./schema.yaml)
 
 ## Contributing a panel
 
-We welcome panels for any organism, tissue, or biological condition. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the submission checklist and PR workflow.
+We welcome panels for any organism, tissue, or biological condition.
+The **fastest path is the web form** at
+[tmurano.github.io/rfind-panels](https://tmurano.github.io/rfind-panels/)
+— drop a CSV, fill a form, paste a PAT, and a PR is opened for you.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the walkthrough and the
+manual git-based alternative.
 
-Key rules:
-- **Source must be publicly accessible** (GEO / ArrayExpress / supplementary tables). No Synapse / dbGaP / EGA / account-gated data.
-- Follow the directory layout and `panel.yaml` schema ([schema.yaml](./schema.yaml)).
-- One panel per PR for easy review.
+Key rules (enforced by CI via `scripts/validate_panel.py`):
+
+- **Source must be publicly accessible** (GEO / ArrayExpress /
+  supplementary tables). No Synapse / dbGaP / EGA / account-gated data.
+- Directory layout **must match** `<organism>/<tissue>/<id>/` and agree
+  with the `organism` / `tissue` / `id` inside `panel.yaml`.
+- `up.tsv` (and `down.tsv` for `type: deg`) header is literally
+  `gene\tdiff\trank`.
+- `n_up` / `n_down` in `panel.yaml` must equal the TSV row counts.
+- Each gene list must have **20 ≤ N ≤ 5,000** rows.
+- `id` must be unique across the registry (not already present in
+  `registry.json`).
+
+CI posts a PR comment listing any violations; turns red until resolved.
+A maintainer reviews scientific quality before merging. On merge,
+`registry.json` is auto-rebuilt and the catalog page updates on the
+next Pages deploy.
 
 ## License
 
