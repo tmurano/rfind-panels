@@ -1,0 +1,88 @@
+name: Validate panel submission
+
+on:
+  pull_request:
+    paths:
+      - "**/panel.yaml"
+      - "**/up.tsv"
+      - "**/down.tsv"
+      - "schema.yaml"
+      - "scripts/validate_panel.py"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Find panel directories touched by this PR
+        id: find
+        run: |
+          set -e
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          changed=$(git diff --name-only "$base_sha" "$head_sha")
+          echo "Changed files:"
+          echo "$changed"
+          panels=$(echo "$changed" \
+            | grep -E '(panel\.yaml|up\.tsv|down\.tsv)$' \
+            | xargs -I{} dirname {} \
+            | sort -u \
+            | grep -v '^\.$' || true)
+          {
+            echo 'panels<<EOF'
+            echo "$panels"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+          if [ -z "$panels" ]; then
+            echo "No panel directories changed, skipping."
+          else
+            echo "Panels to validate:"
+            echo "$panels"
+          fi
+
+      - name: Validate panels
+        id: validate
+        if: steps.find.outputs.panels != ''
+        run: |
+          set +e
+          python3 scripts/validate_panel.py ${{ steps.find.outputs.panels }} > validation.md
+          echo "rc=$?" >> "$GITHUB_OUTPUT"
+          cat validation.md
+
+      - name: Post PR comment
+        if: steps.find.outputs.panels != '' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body;
+            try { body = fs.readFileSync('validation.md', 'utf8'); }
+            catch (e) { body = '_(validation script did not produce output)_'; }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+      - name: Fail if validation failed
+        if: steps.find.outputs.panels != '' && steps.validate.outputs.rc != '0'
+        run: |
+          echo "::error::Panel validation failed — see PR comment for details."
+          exit 1

@@ -15,6 +15,72 @@ Thank you for contributing a panel to `rfind-panels`. Follow these steps:
 > - Just a gene list with no case/control meaning? → **Type B**
 > - Forcing a directionless list into Type A with empty `down.tsv`? → **don't**; use Type B explicitly
 
+---
+
+## Fast path — submit from the browser (recommended)
+
+The static site at **[tmurano.github.io/rfind-panels](https://tmurano.github.io/rfind-panels/)**
+can build `panel.yaml` + `up.tsv` (+ `down.tsv`) from a raw DEG table, fork this
+repo under your account, create a branch, commit the three files, and open a
+pull request — all from a single form. No git or R required.
+
+### What you need
+
+1. **A DEG CSV/TSV** with at least two columns:
+   - `Symbol` (or `gene`, `gene_symbol`)
+   - `log2FC` (or `fold change`, `fc`, `logfc`, `diff`)
+2. **A GitHub Personal Access Token (PAT)** with the `public_repo` scope.
+   Create one at
+   [github.com/settings/tokens/new?scopes=public_repo&description=rfind-panels%20submission](https://github.com/settings/tokens/new?scopes=public_repo&description=rfind-panels%20submission)
+   (the scope is pre-filled via the link). The token stays in your browser's
+   `localStorage` and is sent only to `api.github.com`.
+
+### Steps
+
+1. Open [tmurano.github.io/rfind-panels](https://tmurano.github.io/rfind-panels/)
+   and click **+ Contribute a panel**.
+2. **Drop your CSV/TSV** onto the upload area. The form previews how many
+   UP/DOWN genes survived parsing (capped at 1,000 per direction, sorted by
+   `|log2FC|`) and auto-fills `organism` (from gene-symbol casing) and `type`
+   (from presence of DOWN genes).
+3. **Fill in the metadata** — `id` (lowercase snake_case), `name`, `tissue`
+   (e.g. `microglia`, `t_cell`), `case_condition`, `control_condition`,
+   `citation`, `DOI`, `description`.
+4. **Paste your PAT** and click **Submit pull request**. The page:
+   - forks `tmurano/rfind-panels` to your account (if not already forked)
+   - creates branch `submit/<id>-<timestamp>`
+   - commits `panel.yaml`, `up.tsv`, and `down.tsv` (for `deg`)
+   - opens a PR against `tmurano/rfind-panels:main` with your metadata summary
+5. The **CI validator** (`.github/workflows/validate-panel.yml`) runs
+   automatically and posts a comment on your PR with the schema check
+   result. Fix any errors by pushing new commits to the same branch
+   (or re-submitting from the browser — a new timestamped branch will
+   open a fresh PR).
+6. Once merged, `registry.json` is auto-rebuilt and your panel appears in
+   the catalog on the next Pages deploy.
+
+### What CI checks (see `scripts/validate_panel.py`)
+
+- `panel.yaml` parses and contains every required field from `schema.yaml`
+- `id` matches `^[a-z0-9_]+$` and is **not** already present in `registry.json`
+- Directory layout matches `<organism>/<tissue>/<id>/` and agrees with the
+  `organism` / `tissue` / `id` declared in `panel.yaml`
+- `up.tsv` (and `down.tsv` for `deg`) header is literally `gene\tdiff\trank`
+- `n_up` / `n_down` in panel.yaml match the TSV row count
+- Each gene list has **20 ≤ N ≤ 5,000** rows
+- Gene-symbol casing is consistent with declared organism
+  (mouse = mixed case, human = ALL CAPS) — warning only
+
+If any check fails, the PR gets a comment listing the specific issues and
+the workflow turns red. Passing all checks does not auto-merge; a maintainer
+still reviews scientific quality.
+
+---
+
+## Manual path — submit via git
+
+Prefer git/R over the web form? Follow sections 1–5 below.
+
 ## 1. Check source data eligibility
 
 Your panel's underlying data **must be publicly accessible**. Acceptable sources:

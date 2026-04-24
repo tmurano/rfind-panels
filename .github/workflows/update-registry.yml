@@ -1,0 +1,44 @@
+name: Update registry.json
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/panel.yaml"
+      - "scripts/rebuild_registry.py"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Rebuild registry.json
+        run: python3 scripts/rebuild_registry.py
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet registry.json; then
+            echo "registry.json already up to date."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add registry.json
+          git commit -m "chore: auto-rebuild registry.json"
+          git push
