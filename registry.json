@@ -1,8 +1,18 @@
 {
   "schema_version": "0.1",
-  "generated_at": "2026-04-24T11:23:16+00:00",
-  "n_panels": 10,
+  "generated_at": "2026-04-24T11:51:18+00:00",
+  "n_panels": 11,
   "panels": [
+    {
+      "id": "dev_000",
+      "organism": "human",
+      "tissue": "brain",
+      "type": "deg",
+      "n_up": 1000,
+      "n_down": 1000,
+      "citation": "kang et al 2010",
+      "path": "human/brain/dev_000"
+    },
     {
       "id": "ad_marschallinger2020",
       "organism": "mouse",
