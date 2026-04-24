@@ -19,6 +19,31 @@ Not acceptable:
 - ❌ Unpublished / preprint-only data without clear licensing
 - ❌ Anything requiring registration, MTA, or request-based access
 
+## 1b. Choose panel type (Type A or Type B)
+
+`rfind-panels` accepts two panel types. Both are valid contributions; choose based on your source data:
+
+### Type A — `type: deg` (case-vs-control DEG, **recommended**)
+
+- Source: differential expression between two conditions (case vs control, treatment vs untreated, disease vs healthy, etc.)
+- Structure: paired UP gene list (genes higher in case) + DOWN gene list (genes lower in case)
+- Score interpretation in RFind-sc: **signed** — positive score = case-like cell, negative = control-like
+- **Why preferred**: enables RFind-sc's bidirectional advantage (UP+DOWN four-term Running Fisher); the score sign carries biological direction; multi-axis composition (LDA, scatter) becomes interpretable
+- Examples: aging signature (old vs young), drug response (treated vs vehicle), disease state (AD vs control)
+
+### Type B — `type: gene_set` (single-direction marker / pathway list)
+
+- Source: marker gene list, pathway gene set, ChIP-seq peak-associated genes, GO term, etc. — anything that doesn't have a natural case-vs-control direction
+- Structure: only `up.tsv` (no `down.tsv`)
+- Score interpretation in RFind-sc: **non-negative** — high score = cells highly expressing the gene set
+- **When to use**: when your gene list is directionless (Hallmark pathways, cell-type markers, ChIP-seq peaks). RFind-sc with Type B panels is functionally similar to AUCell/UCell on that panel — bidirectional advantage is not available, but inclusion in the registry remains valuable for cross-panel composition and standardized scoring.
+- Examples: MSigDB Hallmark pathway, microglia-specific marker set, H3K27ac peak-associated genes
+
+### Recommendation
+- If your data **has a case-vs-control structure** (most published DEG analyses): contribute as **Type A** to enable RFind-sc's bidirectional advantage
+- If your data **is a directionless marker/pathway list**: contribute as **Type B** — still welcome, with explicit `type: gene_set` in `panel.yaml`
+- Avoid the antipattern of forcing a directionless gene list into Type A by leaving `down.tsv` empty — declare it as Type B explicitly
+
 ## 2. Prepare the panel files
 
 Create directory `<organism>/<tissue>/<panel_id>/` with three files:
@@ -47,7 +72,7 @@ Tab-separated, header `gene<TAB>diff<TAB>rank`:
 - `rank`: integer starting at 1, sorted by |diff| descending within UP
 
 ### `down.tsv`
-Same format as `up.tsv`. Required for `type: deg`, absent for `type: gene_set`.
+Same format as `up.tsv`. **Required for `type: deg`** (Type A), **absent for `type: gene_set`** (Type B).
 
 ## 3. Panel quality guidelines
 
