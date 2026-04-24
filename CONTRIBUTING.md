@@ -2,6 +2,19 @@
 
 Thank you for contributing a panel to `rfind-panels`. Follow these steps:
 
+> **TL;DR — panels should be DEG-derived (Type A) whenever possible.**
+> A panel is a pair of gene lists (UP / DOWN) from a **case-vs-control** contrast.
+> This structure is what enables RFind-sc's bidirectional (four-term Running Fisher)
+> scoring and makes the output score **signed** — positive = case-like, negative
+> = control-like. Directionless gene sets (pathways, markers, ChIP peaks) are
+> still welcome as **Type B** (UP-only) but lose the bidirectional advantage
+> and become functionally equivalent to AUCell / UCell on that panel.
+>
+> **Quick decision**:
+> - Have `log2FC` + direction from a DEG analysis? → **Type A** (recommended)
+> - Just a gene list with no case/control meaning? → **Type B**
+> - Forcing a directionless list into Type A with empty `down.tsv`? → **don't**; use Type B explicitly
+
 ## 1. Check source data eligibility
 
 Your panel's underlying data **must be publicly accessible**. Acceptable sources:
@@ -81,6 +94,47 @@ Same format as `up.tsv`. **Required for `type: deg`** (Type A), **absent for `ty
 - **Cross-species panels**: convert to target organism's case (e.g. MGI convention for mouse: `Tnf` not `TNF`).
 - **Signal proxy for ChIP/CUT&Tag**: peak width works well when peak score is uninformative (`score_method: signal_width`).
 - **Duplicate genes**: deduplicate before submission.
+
+## 3b. Building a Type A panel from your DEG table (RFindsc R pkg)
+
+The companion R package [RFindsc](https://github.com/tmurano/RFindsc) provides
+`build_panel_from_deg()` which turns a DEG data frame into a registry-ready
+panel:
+
+```r
+# install.packages("devtools")
+devtools::install_github("tmurano/RFindsc")
+library(RFindsc)
+
+deg <- read.csv("my_deg.csv")   # cols: gene, log2FC, padj
+p <- build_panel_from_deg(
+  deg,
+  gene_col    = "gene",
+  log2fc_col  = "log2FC",
+  padj_col    = "padj",
+  padj_thresh = 0.05,
+  top_n       = 1000,
+  label       = "my_condition"
+)
+
+# Write out up.tsv / down.tsv in registry format
+write.table(p$up,   "up.tsv",   sep = "\t", quote = FALSE, row.names = FALSE)
+write.table(p$down, "down.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
+```
+
+Fill `panel.yaml` manually (source, case/control conditions, etc.) and submit.
+Self-check by scoring your panel against the bundled Hammond demo before
+submitting:
+
+```r
+mg <- readRDS("seurat_mg_small.rds")   # or any small Seurat you have
+out <- run_pipeline(mg, biosets = list(my_condition = p))
+# Should produce a signed score matrix; positive = case-aligned cells
+summary(out$scores[, "my_condition"])
+```
+
+If scores are all clipped to the `+/- 300` bound or uniformly near zero,
+investigate your DEG filter (padj threshold, log2FC magnitude, duplicate genes).
 
 ## 4. Submit a PR
 
