@@ -1,0 +1,21 @@
+id: "dev_000"
+name: "Dev"
+organism: human
+tissue: "brain"
+type: deg
+case_condition: "adult"
+control_condition: "infant"
+source:
+  citation: "kang et al 2010"
+  doi: null
+  geo_accession: null
+  supplement: null
+description: "demo"
+score_method: log2fc
+n_up: 1000
+n_down: 1000
+files:
+  up: up.tsv
+  down: down.tsv
+contributor: "tmurano"
+created: "2026-04-24"
