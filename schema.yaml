@@ -1,7 +1,7 @@
-# rfind-panels panel.yaml schema v0.1
+# rfind-panels reference.yaml schema v0.1
 # -----------------------------------------------------------------------------
-# Every panel lives at <organism>/<tissue>/<panel_id>/ and consists of:
-#   - panel.yaml : metadata (this schema)
+# Every reference lives at <organism>/<tissue>/<reference_id>/ and consists of:
+#   - reference.yaml : metadata (this schema)
 #   - up.tsv     : UP-direction gene list (required, TSV with columns gene/diff/rank)
 #   - down.tsv   : DOWN-direction gene list (required for type=deg, absent for type=gene_set)
 #
@@ -40,7 +40,7 @@ fields:
     required: true
     enum: [deg, gene_set]
     description: |
-      - deg: DEG-type panel with UP + DOWN (case vs control), bidirectional scoring
+      - deg: DEG-type reference with UP + DOWN (case vs control), bidirectional scoring
       - gene_set: single-condition gene set, UP-only (DOWN absent)
 
   case_condition:

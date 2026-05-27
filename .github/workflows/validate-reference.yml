@@ -1,13 +1,13 @@
-name: Validate panel submission
+name: Validate reference submission
 
 on:
   pull_request:
     paths:
-      - "**/panel.yaml"
+      - "**/reference.yaml"
       - "**/up.tsv"
       - "**/down.tsv"
       - "schema.yaml"
-      - "scripts/validate_panel.py"
+      - "scripts/validate_reference.py"
 
 permissions:
   contents: read
@@ -30,7 +30,7 @@ jobs:
       - name: Install PyYAML
         run: pip install pyyaml
 
-      - name: Find panel directories touched by this PR
+      - name: Find reference directories touched by this PR
         id: find
         run: |
           set -e
@@ -39,34 +39,34 @@ jobs:
           changed=$(git diff --name-only "$base_sha" "$head_sha")
           echo "Changed files:"
           echo "$changed"
-          panels=$(echo "$changed" \
-            | grep -E '(panel\.yaml|up\.tsv|down\.tsv)$' \
+          references=$(echo "$changed" \
+            | grep -E '(reference\.yaml|up\.tsv|down\.tsv)$' \
             | xargs -I{} dirname {} \
             | sort -u \
             | grep -v '^\.$' || true)
           {
-            echo 'panels<<EOF'
-            echo "$panels"
+            echo 'references<<EOF'
+            echo "$references"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
-          if [ -z "$panels" ]; then
-            echo "No panel directories changed, skipping."
+          if [ -z "$references" ]; then
+            echo "No reference directories changed, skipping."
           else
-            echo "Panels to validate:"
-            echo "$panels"
+            echo "References to validate:"
+            echo "$references"
           fi
 
-      - name: Validate panels
+      - name: Validate references
         id: validate
-        if: steps.find.outputs.panels != ''
+        if: steps.find.outputs.references != ''
         run: |
           set +e
-          python3 scripts/validate_panel.py ${{ steps.find.outputs.panels }} > validation.md
+          python3 scripts/validate_reference.py ${{ steps.find.outputs.references }} > validation.md
           echo "rc=$?" >> "$GITHUB_OUTPUT"
           cat validation.md
 
       - name: Post PR comment
-        if: steps.find.outputs.panels != '' && always()
+        if: steps.find.outputs.references != '' && always()
         uses: actions/github-script@v7
         with:
           script: |
@@ -82,7 +82,7 @@ jobs:
             });
 
       - name: Fail if validation failed
-        if: steps.find.outputs.panels != '' && steps.validate.outputs.rc != '0'
+        if: steps.find.outputs.references != '' && steps.validate.outputs.rc != '0'
         run: |
-          echo "::error::Panel validation failed — see PR comment for details."
+          echo "::error::Reference validation failed — see PR comment for details."
           exit 1

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate one or more panel directories against the rfind-panels schema.
+"""Validate one or more reference directories against the rfind-panels schema.
 
 Usage:
-  python3 scripts/validate_panel.py <panel_dir> [<panel_dir> ...]
+  python3 scripts/validate_reference.py <reference_dir> [<reference_dir> ...]
 
 Exit code 0 = all valid, 1 = at least one invalid. A markdown summary is
 printed to stdout for use in PR comments.
@@ -36,7 +36,7 @@ def _existing_ids() -> set[str]:
     if not REGISTRY_PATH.exists():
         return set()
     data = json.loads(REGISTRY_PATH.read_text())
-    return {p["id"] for p in data.get("panels", [])}
+    return {p["id"] for p in data.get("references", [])}
 
 
 def _read_tsv(path: Path) -> tuple[list[dict], list[str]]:
@@ -89,65 +89,65 @@ def _check_gene_casing(genes: list[str], declared_organism: str) -> list[str]:
     return warns
 
 
-def validate_panel(panel_dir: Path, existing_ids: set[str]) -> tuple[list[str], list[str]]:
+def validate_reference(reference_dir: Path, existing_ids: set[str]) -> tuple[list[str], list[str]]:
     errs: list[str] = []
     warns: list[str] = []
-    rel = panel_dir.relative_to(ROOT)
+    rel = reference_dir.relative_to(ROOT)
 
-    yaml_path = panel_dir / "panel.yaml"
+    yaml_path = reference_dir / "reference.yaml"
     if not yaml_path.exists():
-        errs.append(f"{rel}: panel.yaml missing")
+        errs.append(f"{rel}: reference.yaml missing")
         return errs, warns
 
     try:
         meta = yaml.safe_load(yaml_path.read_text())
     except yaml.YAMLError as e:
-        errs.append(f"{rel}/panel.yaml: YAML parse error: {e}")
+        errs.append(f"{rel}/reference.yaml: YAML parse error: {e}")
         return errs, warns
     if not isinstance(meta, dict):
-        errs.append(f"{rel}/panel.yaml: top level must be a mapping")
+        errs.append(f"{rel}/reference.yaml: top level must be a mapping")
         return errs, warns
 
     for fld in REQUIRED_FIELDS:
         if fld not in meta:
-            errs.append(f"{rel}/panel.yaml: missing required field `{fld}`")
+            errs.append(f"{rel}/reference.yaml: missing required field `{fld}`")
 
     pid = meta.get("id", "")
     if not ID_RE.match(str(pid)):
-        errs.append(f"{rel}/panel.yaml: id {pid!r} must match ^[a-z0-9_]+$")
+        errs.append(f"{rel}/reference.yaml: id {pid!r} must match ^[a-z0-9_]+$")
     if pid in existing_ids:
-        errs.append(f"{rel}/panel.yaml: id {pid!r} already exists in registry.json")
+        errs.append(f"{rel}/reference.yaml: id {pid!r} already exists in registry.json")
 
     path_parts = rel.parts
     if len(path_parts) == 3:
         exp_org, exp_tissue, exp_id = path_parts
         if meta.get("organism") != exp_org:
             errs.append(
-                f"{rel}/panel.yaml: organism={meta.get('organism')!r} but path says {exp_org!r}"
+                f"{rel}/reference.yaml: organism={meta.get('organism')!r} but path says {exp_org!r}"
             )
         if meta.get("tissue") != exp_tissue:
             errs.append(
-                f"{rel}/panel.yaml: tissue={meta.get('tissue')!r} but path says {exp_tissue!r}"
+                f"{rel}/reference.yaml: tissue={meta.get('tissue')!r} but path says {exp_tissue!r}"
             )
         if pid != exp_id:
-            errs.append(f"{rel}/panel.yaml: id={pid!r} but path says {exp_id!r}")
+            errs.append(f"{rel}/reference.yaml: id={pid!r} but path says {exp_id!r}")
     else:
         errs.append(
             f"{rel}: path must be <organism>/<tissue>/<id>/ (got {len(path_parts)} parts)"
         )
 
     if meta.get("organism") not in ORGANISM_ENUM:
-        errs.append(f"{rel}/panel.yaml: organism must be one of {sorted(ORGANISM_ENUM)}")
+        errs.append(f"{rel}/reference.yaml: organism must be one of {sorted(ORGANISM_ENUM)}")
     if meta.get("type") not in TYPE_ENUM:
-        errs.append(f"{rel}/panel.yaml: type must be one of {sorted(TYPE_ENUM)}")
+        errs.append(f"{rel}/reference.yaml: type must be one of {sorted(TYPE_ENUM)}")
     if meta.get("score_method") not in SCORE_METHOD_ENUM:
-        errs.append(f"{rel}/panel.yaml: score_method must be one of {sorted(SCORE_METHOD_ENUM)}")
+        errs.append(f"{rel}/reference.yaml: score_method must be one of {sorted(SCORE_METHOD_ENUM)}")
 
     src = meta.get("source")
     if not isinstance(src, dict) or not src.get("citation"):
-        errs.append(f"{rel}/panel.yaml: source.citation is required")
+        errs.append(f"{rel}/reference.yaml: source.citation is required")
 
-    up_rows, e1 = _read_tsv(panel_dir / "up.tsv")
+    up_rows, e1 = _read_tsv(reference_dir / "up.tsv")
     errs.extend(e1)
     if up_rows:
         if len(up_rows) < MIN_GENES:
@@ -158,7 +158,7 @@ def validate_panel(panel_dir: Path, existing_ids: set[str]) -> tuple[list[str], 
             errs.append(f"{rel}: n_up={meta.get('n_up')} but up.tsv has {len(up_rows)} rows")
 
     if meta.get("type") == "deg":
-        dn_rows, e2 = _read_tsv(panel_dir / "down.tsv")
+        dn_rows, e2 = _read_tsv(reference_dir / "down.tsv")
         errs.extend(e2)
         if dn_rows:
             if len(dn_rows) < MIN_GENES:
@@ -170,12 +170,12 @@ def validate_panel(panel_dir: Path, existing_ids: set[str]) -> tuple[list[str], 
                     f"{rel}: n_down={meta.get('n_down')} but down.tsv has {len(dn_rows)} rows"
                 )
     else:
-        if (panel_dir / "down.tsv").exists():
+        if (reference_dir / "down.tsv").exists():
             warns.append(f"{rel}: type=gene_set but down.tsv exists (will be ignored)")
 
     all_genes = [r["gene"] for r in up_rows]
-    if meta.get("type") == "deg" and up_rows and (panel_dir / "down.tsv").exists():
-        dn_rows_only, _ = _read_tsv(panel_dir / "down.tsv")
+    if meta.get("type") == "deg" and up_rows and (reference_dir / "down.tsv").exists():
+        dn_rows_only, _ = _read_tsv(reference_dir / "down.tsv")
         all_genes.extend(r["gene"] for r in dn_rows_only)
     warns.extend(_check_gene_casing(all_genes, meta.get("organism", "")))
 
@@ -184,17 +184,17 @@ def validate_panel(panel_dir: Path, existing_ids: set[str]) -> tuple[list[str], 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("panels", nargs="+", help="panel directories to validate")
+    ap.add_argument("references", nargs="+", help="reference directories to validate")
     ap.add_argument("--md", action="store_true", help="emit markdown summary")
     args = ap.parse_args()
 
     existing = _existing_ids()
 
-    print("# Panel validation\n")
+    print("# Reference validation\n")
     n_ok = n_bad = 0
-    for p_str in args.panels:
+    for p_str in args.references:
         p = Path(p_str).resolve()
-        errs, warns = validate_panel(p, existing)
+        errs, warns = validate_reference(p, existing)
         status = "FAIL" if errs else ("WARN" if warns else "OK")
         emoji = {"FAIL": "❌", "WARN": "⚠️", "OK": "✅"}[status]
         print(f"## {emoji} `{p.relative_to(ROOT)}` — **{status}**")
@@ -214,7 +214,7 @@ def main():
         else:
             n_ok += 1
 
-    print(f"---\n**Summary**: {n_ok} panel(s) passed, {n_bad} failed.")
+    print(f"---\n**Summary**: {n_ok} reference(s) passed, {n_bad} failed.")
     sys.exit(0 if n_bad == 0 else 1)
 
 

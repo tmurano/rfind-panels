@@ -22,7 +22,7 @@ SOFTWARE.
 
 ---
 
-Note: Panel gene lists are derived from the original publications cited in each
-panel's panel.yaml file. Copyright for the underlying gene signatures belongs to
+Note: Reference gene lists are derived from the original publications cited in each
+reference's reference.yaml file. Copyright for the underlying gene signatures belongs to
 the respective paper authors / journals. This registry provides curation and
 standardization only.

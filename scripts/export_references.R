@@ -1,19 +1,19 @@
-# export_panels.R
+# export_references.R
 # ----------------------------------------------------------------------------
-# biosets.rds + (axis meta) → panel registry format の自動変換 script
+# biosets.rds + (axis meta) → reference registry format の自動変換 script
 #
 # Input : ~/Miyakawa Lab Dropbox/Murano Tomoyuki/RFind-sc_260423/processed/biosets.rds
-# Output: ./mouse/microglia/<panel_id>/{panel.yaml, up.tsv, (down.tsv)}
-#         ./registry.json (全 panel の index)
+# Output: ./mouse/microglia/<reference_id>/{reference.yaml, up.tsv, (down.tsv)}
+#         ./registry.json (全 reference の index)
 # ----------------------------------------------------------------------------
 
 BIOSETS_RDS <- "~/Miyakawa Lab Dropbox/Murano Tomoyuki/RFind-sc_260423/processed/biosets.rds"
 REGISTRY_ROOT <- "~/Desktop/rfind-panels"
 
-# -- Panel 命名 / メタデータ map ------------------------------------------------
-# key = biosets.rds 上の panel 名 ("Aging" 等)
+# -- Reference 命名 / メタデータ map ------------------------------------------------
+# key = biosets.rds 上の reference 名 ("Aging" 等)
 # value = registry 上の metadata (path, yaml 用)
-PANEL_DEFS <- list(
+REFERENCE_DEFS <- list(
   Aging = list(
     id = "aging_hammond2019", organism = "mouse", tissue = "microglia",
     type = "deg", case_condition = "P540 (aged)",
@@ -120,7 +120,7 @@ yaml_scalar <- function(v) {
   sprintf("\"%s\"", escaped)
 }
 
-write_panel_yaml <- function(path, meta, n_up, n_down, contributor = "tmurano") {
+write_reference_yaml <- function(path, meta, n_up, n_down, contributor = "tmurano") {
   lines <- c(
     sprintf("id: %s",   yaml_scalar(meta$id)),
     sprintf("name: %s", yaml_scalar(meta$id)),
@@ -151,26 +151,26 @@ b <- readRDS(BIOSETS_RDS)
 registry <- list()
 
 for (orig_name in setdiff(names(b), "meta")) {
-  if (!orig_name %in% names(PANEL_DEFS)) {
-    cat(sprintf("  [skip] %s (no PANEL_DEFS entry)\n", orig_name))
+  if (!orig_name %in% names(REFERENCE_DEFS)) {
+    cat(sprintf("  [skip] %s (no REFERENCE_DEFS entry)\n", orig_name))
     next
   }
-  def <- PANEL_DEFS[[orig_name]]
-  panel_dir <- file.path(REGISTRY_ROOT, def$organism, def$tissue, def$id)
-  dir.create(panel_dir, recursive = TRUE, showWarnings = FALSE)
+  def <- REFERENCE_DEFS[[orig_name]]
+  reference_dir <- file.path(REGISTRY_ROOT, def$organism, def$tissue, def$id)
+  dir.create(reference_dir, recursive = TRUE, showWarnings = FALSE)
 
   up_df  <- b[[orig_name]]$up
   dn_df  <- b[[orig_name]]$down
   n_up   <- nrow(up_df)
   n_down <- if (is.null(dn_df)) 0L else nrow(dn_df)
 
-  write.table(up_df, file.path(panel_dir, "up.tsv"),
+  write.table(up_df, file.path(reference_dir, "up.tsv"),
               sep = "\t", quote = FALSE, row.names = FALSE)
   if (n_down > 0) {
-    write.table(dn_df, file.path(panel_dir, "down.tsv"),
+    write.table(dn_df, file.path(reference_dir, "down.tsv"),
                 sep = "\t", quote = FALSE, row.names = FALSE)
   }
-  write_panel_yaml(file.path(panel_dir, "panel.yaml"), def, n_up, n_down)
+  write_reference_yaml(file.path(reference_dir, "reference.yaml"), def, n_up, n_down)
 
   registry[[def$id]] <- list(
     id = def$id, organism = def$organism, tissue = def$tissue,
@@ -185,7 +185,7 @@ for (orig_name in setdiff(names(b), "meta")) {
 
 # registry.json (minimal, no jsonlite dependency)
 json_escape <- function(s) gsub("\"", "\\\\\"", s)
-json_panel <- function(p) {
+json_reference <- function(p) {
   fields <- c(
     sprintf("\"id\":\"%s\"",        json_escape(p$id)),
     sprintf("\"organism\":\"%s\"",  json_escape(p$organism)),
@@ -203,13 +203,13 @@ lines_json <- c(
   "{",
   sprintf("  \"schema_version\": \"0.1\","),
   sprintf("  \"generated_at\": \"%s\",", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
-  sprintf("  \"n_panels\": %d,", length(registry)),
-  "  \"panels\": [",
-  paste(sapply(registry, json_panel), collapse = ",\n"),
+  sprintf("  \"n_references\": %d,", length(registry)),
+  "  \"references\": [",
+  paste(sapply(registry, json_reference), collapse = ",\n"),
   "  ]",
   "}"
 )
 writeLines(lines_json, file.path(REGISTRY_ROOT, "registry.json"))
 
-cat(sprintf("\n✓ Exported %d panels to %s\n", length(registry), REGISTRY_ROOT))
+cat(sprintf("\n✓ Exported %d references to %s\n", length(registry), REGISTRY_ROOT))
 cat(sprintf("✓ Registry index: %s\n", file.path(REGISTRY_ROOT, "registry.json")))

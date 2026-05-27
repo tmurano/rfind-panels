@@ -1,8 +1,8 @@
 {
   "schema_version": "0.1",
   "generated_at": "2026-04-24T11:51:18+00:00",
-  "n_panels": 11,
-  "panels": [
+  "n_references": 11,
+  "references": [
     {
       "id": "dev_000",
       "organism": "human",

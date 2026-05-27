@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "**/panel.yaml"
+      - "**/reference.yaml"
       - "scripts/rebuild_registry.py"
   workflow_dispatch: {}
 

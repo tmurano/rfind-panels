@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild registry.json by walking all panel.yaml files in the repo.
+"""Rebuild registry.json by walking all reference.yaml files in the repo.
 
 Usage:
   python3 scripts/rebuild_registry.py
@@ -21,8 +21,8 @@ SORT_KEY = ("organism", "tissue", "id")
 
 
 def main() -> None:
-    panels = []
-    for yml in sorted(ROOT.rglob("panel.yaml")):
+    references = []
+    for yml in sorted(ROOT.rglob("reference.yaml")):
         rel = yml.relative_to(ROOT)
         try:
             meta = yaml.safe_load(yml.read_text()) or {}
@@ -33,7 +33,7 @@ def main() -> None:
             print(f"skip {rel}: missing id")
             continue
 
-        panels.append({
+        references.append({
             "id": meta["id"],
             "organism": meta.get("organism"),
             "tissue": meta.get("tissue"),
@@ -44,20 +44,20 @@ def main() -> None:
             "path": str(rel.parent),
         })
 
-    panels.sort(key=lambda p: tuple(p.get(k) or "" for k in SORT_KEY))
+    references.sort(key=lambda p: tuple(p.get(k) or "" for k in SORT_KEY))
 
     data = {
         "schema_version": "0.1",
         "generated_at": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
-        "n_panels": len(panels),
-        "panels": panels,
+        "n_references": len(references),
+        "references": references,
     }
 
     OUT.write_text(
         json.dumps(data, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    print(f"Wrote {OUT.relative_to(ROOT)}: {len(panels)} panel(s)")
+    print(f"Wrote {OUT.relative_to(ROOT)}: {len(references)} reference(s)")
 
 
 if __name__ == "__main__":

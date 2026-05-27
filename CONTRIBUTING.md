@@ -1,14 +1,14 @@
-# Contributing a panel
+# Contributing a reference
 
-Thank you for contributing a panel to `rfind-panels`. Follow these steps:
+Thank you for contributing a reference to `rfind-panels`. Follow these steps:
 
-> **TL;DR — panels should be DEG-derived (Type A) whenever possible.**
-> A panel is a pair of gene lists (UP / DOWN) from a **case-vs-control** contrast.
+> **TL;DR — references should be DEG-derived (Type A) whenever possible.**
+> A reference is a pair of gene lists (UP / DOWN) from a **case-vs-control** contrast.
 > This structure is what enables RFind-sc's bidirectional (four-term Running Fisher)
 > scoring and makes the output score **signed** — positive = case-like, negative
 > = control-like. Directionless gene sets (pathways, markers, ChIP peaks) are
 > still welcome as **Type B** (UP-only) but lose the bidirectional advantage
-> and become functionally equivalent to AUCell / UCell on that panel.
+> and become functionally equivalent to AUCell / UCell on that reference.
 >
 > **Quick decision**:
 > - Have `log2FC` + direction from a DEG analysis? → **Type A** (recommended)
@@ -20,7 +20,7 @@ Thank you for contributing a panel to `rfind-panels`. Follow these steps:
 ## Fast path — submit from the browser (recommended)
 
 The static site at **[tmurano.github.io/rfind-panels](https://tmurano.github.io/rfind-panels/)**
-can build `panel.yaml` + `up.tsv` (+ `down.tsv`) from a raw DEG table, fork this
+can build `reference.yaml` + `up.tsv` (+ `down.tsv`) from a raw DEG table, fork this
 repo under your account, create a branch, commit the three files, and open a
 pull request — all from a single form. No git or R required.
 
@@ -38,7 +38,7 @@ pull request — all from a single form. No git or R required.
 ### Steps
 
 1. Open [tmurano.github.io/rfind-panels](https://tmurano.github.io/rfind-panels/)
-   and click **+ Contribute a panel**.
+   and click **+ Contribute a reference**.
 2. **Drop your CSV/TSV** onto the upload area. The form previews how many
    UP/DOWN genes survived parsing (capped at 1,000 per direction, sorted by
    `|log2FC|`) and auto-fills `organism` (from gene-symbol casing) and `type`
@@ -49,24 +49,24 @@ pull request — all from a single form. No git or R required.
 4. **Paste your PAT** and click **Submit pull request**. The page:
    - forks `tmurano/rfind-panels` to your account (if not already forked)
    - creates branch `submit/<id>-<timestamp>`
-   - commits `panel.yaml`, `up.tsv`, and `down.tsv` (for `deg`)
+   - commits `reference.yaml`, `up.tsv`, and `down.tsv` (for `deg`)
    - opens a PR against `tmurano/rfind-panels:main` with your metadata summary
-5. The **CI validator** (`.github/workflows/validate-panel.yml`) runs
+5. The **CI validator** (`.github/workflows/validate-reference.yml`) runs
    automatically and posts a comment on your PR with the schema check
    result. Fix any errors by pushing new commits to the same branch
    (or re-submitting from the browser — a new timestamped branch will
    open a fresh PR).
-6. Once merged, `registry.json` is auto-rebuilt and your panel appears in
+6. Once merged, `registry.json` is auto-rebuilt and your reference appears in
    the catalog on the next Pages deploy.
 
-### What CI checks (see `scripts/validate_panel.py`)
+### What CI checks (see `scripts/validate_reference.py`)
 
-- `panel.yaml` parses and contains every required field from `schema.yaml`
+- `reference.yaml` parses and contains every required field from `schema.yaml`
 - `id` matches `^[a-z0-9_]+$` and is **not** already present in `registry.json`
 - Directory layout matches `<organism>/<tissue>/<id>/` and agrees with the
-  `organism` / `tissue` / `id` declared in `panel.yaml`
+  `organism` / `tissue` / `id` declared in `reference.yaml`
 - `up.tsv` (and `down.tsv` for `deg`) header is literally `gene\tdiff\trank`
-- `n_up` / `n_down` in panel.yaml match the TSV row count
+- `n_up` / `n_down` in reference.yaml match the TSV row count
 - Each gene list has **20 ≤ N ≤ 5,000** rows
 - Gene-symbol casing is consistent with declared organism
   (mouse = mixed case, human = ALL CAPS) — warning only
@@ -83,7 +83,7 @@ Prefer git/R over the web form? Follow sections 1–5 below.
 
 ## 1. Check source data eligibility
 
-Your panel's underlying data **must be publicly accessible**. Acceptable sources:
+Your reference's underlying data **must be publicly accessible**. Acceptable sources:
 
 - ✅ GEO (Gene Expression Omnibus)
 - ✅ ArrayExpress / ENA / SRA
@@ -98,9 +98,9 @@ Not acceptable:
 - ❌ Unpublished / preprint-only data without clear licensing
 - ❌ Anything requiring registration, MTA, or request-based access
 
-## 1b. Choose panel type (Type A or Type B)
+## 1b. Choose reference type (Type A or Type B)
 
-`rfind-panels` accepts two panel types. Both are valid contributions; choose based on your source data:
+`rfind-panels` accepts two reference types. Both are valid contributions; choose based on your source data:
 
 ### Type A — `type: deg` (case-vs-control DEG, **recommended**)
 
@@ -115,24 +115,24 @@ Not acceptable:
 - Source: marker gene list, pathway gene set, ChIP-seq peak-associated genes, GO term, etc. — anything that doesn't have a natural case-vs-control direction
 - Structure: only `up.tsv` (no `down.tsv`)
 - Score interpretation in RFind-sc: **non-negative** — high score = cells highly expressing the gene set
-- **When to use**: when your gene list is directionless (Hallmark pathways, cell-type markers, ChIP-seq peaks). RFind-sc with Type B panels is functionally similar to AUCell/UCell on that panel — bidirectional advantage is not available, but inclusion in the registry remains valuable for cross-panel composition and standardized scoring.
+- **When to use**: when your gene list is directionless (Hallmark pathways, cell-type markers, ChIP-seq peaks). RFind-sc with Type B references is functionally similar to AUCell/UCell on that reference — bidirectional advantage is not available, but inclusion in the registry remains valuable for cross-reference composition and standardized scoring.
 - Examples: MSigDB Hallmark pathway, microglia-specific marker set, H3K27ac peak-associated genes
 
 ### Recommendation
 - If your data **has a case-vs-control structure** (most published DEG analyses): contribute as **Type A** to enable RFind-sc's bidirectional advantage
-- If your data **is a directionless marker/pathway list**: contribute as **Type B** — still welcome, with explicit `type: gene_set` in `panel.yaml`
+- If your data **is a directionless marker/pathway list**: contribute as **Type B** — still welcome, with explicit `type: gene_set` in `reference.yaml`
 - Avoid the antipattern of forcing a directionless gene list into Type A by leaving `down.tsv` empty — declare it as Type B explicitly
 
-## 2. Prepare the panel files
+## 2. Prepare the reference files
 
-Create directory `<organism>/<tissue>/<panel_id>/` with three files:
+Create directory `<organism>/<tissue>/<reference_id>/` with three files:
 
-### `panel.yaml`
-Metadata following [schema.yaml](./schema.yaml). Copy an existing panel as a template:
+### `reference.yaml`
+Metadata following [schema.yaml](./schema.yaml). Copy an existing reference as a template:
 
 ```bash
-cp -r mouse/microglia/aging_hammond2019 mouse/<your_tissue>/<your_panel_id>
-# then edit panel.yaml
+cp -r mouse/microglia/aging_hammond2019 mouse/<your_tissue>/<your_reference_id>
+# then edit reference.yaml
 ```
 
 Required fields:
@@ -153,19 +153,19 @@ Tab-separated, header `gene<TAB>diff<TAB>rank`:
 ### `down.tsv`
 Same format as `up.tsv`. **Required for `type: deg`** (Type A), **absent for `type: gene_set`** (Type B).
 
-## 3. Panel quality guidelines
+## 3. Reference quality guidelines
 
 - **UP/DOWN length**: typically 50-1000 genes. Avoid extremes (< 20 or > 2000).
 - **Gene symbols**: use current HGNC / MGI standard. No Ensembl IDs, no RefSeq.
-- **Cross-species panels**: convert to target organism's case (e.g. MGI convention for mouse: `Tnf` not `TNF`).
+- **Cross-species references**: convert to target organism's case (e.g. MGI convention for mouse: `Tnf` not `TNF`).
 - **Signal proxy for ChIP/CUT&Tag**: peak width works well when peak score is uninformative (`score_method: signal_width`).
 - **Duplicate genes**: deduplicate before submission.
 
-## 3b. Building a Type A panel from your DEG table (RFindsc R pkg)
+## 3b. Building a Type A reference from your DEG table (RFindsc R pkg)
 
 The companion R package [RFindsc](https://github.com/tmurano/RFindsc) provides
 `build_panel_from_deg()` which turns a DEG data frame into a registry-ready
-panel:
+reference:
 
 ```r
 # install.packages("devtools")
@@ -188,8 +188,8 @@ write.table(p$up,   "up.tsv",   sep = "\t", quote = FALSE, row.names = FALSE)
 write.table(p$down, "down.tsv", sep = "\t", quote = FALSE, row.names = FALSE)
 ```
 
-Fill `panel.yaml` manually (source, case/control conditions, etc.) and submit.
-Self-check by scoring your panel against the bundled Hammond demo before
+Fill `reference.yaml` manually (source, case/control conditions, etc.) and submit.
+Self-check by scoring your reference against the bundled Hammond demo before
 submitting:
 
 ```r
@@ -205,13 +205,13 @@ investigate your DEG filter (padj threshold, log2FC magnitude, duplicate genes).
 ## 4. Submit a PR
 
 ```bash
-git checkout -b add-panel-<your_panel_id>
-git add <organism>/<tissue>/<panel_id>/
-git commit -m "Add panel: <your_panel_id> (<one-line description>)"
-git push origin add-panel-<your_panel_id>
+git checkout -b add-reference-<your_reference_id>
+git add <organism>/<tissue>/<reference_id>/
+git commit -m "Add reference: <your_reference_id> (<one-line description>)"
+git push origin add-reference-<your_reference_id>
 ```
 
-Open a PR with title `Add panel: <panel_id>`. In the PR description, include:
+Open a PR with title `Add reference: <reference_id>`. In the PR description, include:
 
 - [ ] Source paper citation + DOI
 - [ ] Link to supplementary data or GEO accession
@@ -223,19 +223,19 @@ Open a PR with title `Add panel: <panel_id>`. In the PR description, include:
 Maintainers will:
 
 1. Verify source accessibility
-2. Check `panel.yaml` schema compliance
+2. Check `reference.yaml` schema compliance
 3. Spot-check gene symbols (standard nomenclature)
 4. Confirm UP/DOWN lengths are reasonable
 5. Regenerate `registry.json` (maintainer task)
 
 ## Regenerating registry.json
 
-Maintainer-only: after merging a panel, regenerate the index:
+Maintainer-only: after merging a reference, regenerate the index:
 
 ```bash
-Rscript scripts/export_panels.R  # re-scans biosets.rds (if working from internal)
+Rscript scripts/export_references.R  # re-scans biosets.rds (if working from internal)
 # OR
-Rscript scripts/rebuild_registry.R  # (TODO: standalone scan of all panel.yaml)
+Rscript scripts/rebuild_registry.R  # (TODO: standalone scan of all reference.yaml)
 ```
 
 ## Questions
